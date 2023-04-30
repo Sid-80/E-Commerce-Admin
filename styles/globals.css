@@ -1,3 +1,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+input, textarea{
+    @apply border-b-2 p-2 w-full mb-3
+}
+input:focus, textarea:focus{
+    @apply border-[#443C68] outline-none
+}
