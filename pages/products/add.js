@@ -1,19 +1,48 @@
 import Layout from '@/components/Layout'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {PlusCircleIcon} from "@heroicons/react/24/outline";
 import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { useRouter } from 'next/router';
 
 export default function add() {
     const [title,setTitle] = useState("");
     const [description,setDescription] = useState("");
     const [price,setPrice] = useState("");
+    const router = useRouter()
+    const options = {
+        position: "bottom-right",
+        autoClose: 8000,
+        theme: "dark",
+        pauseOnHover: true,
+    }
+    const validation = () => {
+        if(title === ""){
+            toast.error("Enter product name",options);
+            return false;
+        }else if (description === "") {
+            toast.error("Enter product description",options);
+            return false;
+        }else if(price === ""){
+            toast.error("Enter product price",options);
+            return false;
+        }
+        return true;
+    }
     const createProduct = async(e) => {
         e.preventDefault();
         try {
-            const data = {title,description,price}
-            const res = await axios.post('/api/products',data);
+            if (validation()) {
+                const data = {title,description,price}
+                const res = await axios.post('/api/products',data);
+                console.log(res);
+                if (res.data.status === true) {
+                    router.push('/products');
+                }
+            }
         } catch (e) {
-            
+            console.log(e);
         }
     }
   return (
@@ -33,6 +62,7 @@ export default function add() {
                 </button>
             </form>
         </div>
+        <ToastContainer />
     </Layout>
   )
 }
