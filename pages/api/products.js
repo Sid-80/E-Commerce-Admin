@@ -11,8 +11,12 @@ export default async function handler(req, res) {
       })
       res.json({status:true});
     }else if (method === 'GET') {
-      const products = await Product.find({});
-      res.json(products);
+      if (req.query?.id) {
+        res.json(await Product.findOne({_id:req.query.id}))
+      }else{
+        res.json(await Product.find({}));
+      }
+      
     }
   }
   
