@@ -3,7 +3,9 @@ import Layout from '@/components/Layout'
 import axios from 'axios'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import {PencilIcon} from "@heroicons/react/24/outline"
+import {PencilIcon, TrashIcon} from "@heroicons/react/24/outline";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function products() {
 
@@ -27,13 +29,19 @@ export default function products() {
               <div className='flex flex-row gap-1 rounded-md my-1 hover:bg-[#9CB4CC] py-2 justify-between items-center border-b-4 px-4' key={prod._id}>
                 <h1>{prod.title}</h1>
                 <p>{`$${prod.price}`}</p>
-                <Link className='flex gap-1 bg-[#443C68] text-white font-bold p-2 rounded-lg' href={`/products/edit/${prod._id}`}>
-                  <PencilIcon className='h-7 w-7' />Edit
-                </Link>
+                <div className='flex gap-2'>
+                  <Link className='flex gap-1 bg-green-300 hover:bg-green-400 text-black font-bold p-2 rounded-lg' href={`/products/edit/${prod._id}`}>
+                    <PencilIcon className='h-7 w-7' />Edit
+                  </Link>
+                  <Link href={`/products/delete/${prod._id}`} className='flex gap-1 bg-red-300 text-black hover:bg-red-400 font-bold p-2 rounded-lg'>
+                    <TrashIcon className='h-7 w-7' />Delete
+                  </Link>
+                </div>
               </div>
             ))
           }
         </div>
+        <ToastContainer />
     </Layout>
   )
 }
