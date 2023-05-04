@@ -4,10 +4,12 @@ import { Product } from "@/models/Products";
 export default async function handler(req, res) {
     const {method} = req;
     await mongooseConnection();
-    if(method === 'POST'){
-      const {title,description,price} = req.body;
+    if(method === 'POST')
+    {
+      const {title,description,price,images} = req.body;
+      console.log(images);
       await Product.create({
-        title,description,price
+        title,description,price,images
       })
       res.json({status:true});
     }
@@ -22,11 +24,11 @@ export default async function handler(req, res) {
     }
     else if (method === 'PUT')
     {
-      const {title,description,price,id} = req.body;
+      const {title,description,price,id,images} = req.body;
       const _id = id[0];
       console.log(_id);
       await Product.updateOne({_id},{
-        title,description,price
+        title,description,price,images
       })
       res.json({status:true});
     }

@@ -10,6 +10,7 @@ export default function editProduct() {
     const [title,setTitle] = useState("");
     const [description,setDescription] = useState("");
     const [price,setPrice] = useState("");
+    const [images,setImages] = useState([])
     const router = useRouter();
     const {id}= router.query;
     
@@ -36,7 +37,7 @@ export default function editProduct() {
         e.preventDefault();
         try {
             if (validation()) {
-                const data = {id,title,description,price}
+                const data = {id,title,description,price,images}
                 const res = await axios.put(`/api/products`,data);
                 if (res.data.status === true) {
                   router.push('/products');
@@ -46,6 +47,22 @@ export default function editProduct() {
             console.log(e);
         }
     }
+    const uploadImage = async(e) => {
+        const files = e.target?.files;
+        if(files?.length > 0){
+            const data = new FormData();
+            for(const file of files){
+                data.append('file',file)
+            }
+            const res = await axios.post('http://localhost:3000/api/upload',data,{
+                headers:{'Content-Type':'multipart/form-data'}
+            });
+            console.log(res.data);
+            setImages(old => {
+                return [...old,...res.data];
+            });
+        }
+    }
     
     useEffect(()=>{
       if(!id) return;
@@ -53,8 +70,8 @@ export default function editProduct() {
         setTitle(res.data.title);
         setDescription(res.data.description);
         setPrice(res.data.price);
+        setImages(res.data.images);
       });
-      
     },[id])
   return (
     <Layout>
@@ -65,6 +82,24 @@ export default function editProduct() {
             <input value={title} onChange={(e)=>setTitle(e.target.value)} type='text' placeholder='product name' />
             <label className='mt-2 uppercase underline underline-offset-2 text-lg font-bold'>Product Description</label>
             <textarea value={description} onChange={(e)=>setDescription(e.target.value)} placeholder='description'></textarea>
+
+
+            <label className='mt-2 uppercase underline underline-offset-2 text-lg font-bold'>Product Images</label>
+                <div className='p-2 overflow-x-auto flex gap-1 overflow-y-hidden'>
+                    {
+                        images.map((img)=>(
+                            <div key={img} className='w-32 cursor-pointer h-32 border flex items-center justify-center rounded-lg'>
+                                <img src={img} />
+                            </div>
+                        ))
+                    }
+                    <label className='w-32 cursor-pointer h-32 border flex items-center justify-center rounded-lg bg-[#D3CEDF]'>
+                        <PlusCircleIcon className='w-10 h-10' />
+                        <input onChange={uploadImage} type='file' className='hidden' />
+                    </label>
+                </div>
+
+
             <label className='mt-2 uppercase underline underline-offset-2 text-lg font-bold'>Price in USD</label>
             <input value={price} onChange={(e)=>setPrice(e.target.value)} placeholder='price' type='number' />
             <button type='submit' className=' bg-[#635985] rounded-md my-5 text-white p-2 px-4 hover:bg-[#443C68] flex gap-1'>

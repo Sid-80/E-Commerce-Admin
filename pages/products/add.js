@@ -10,6 +10,7 @@ export default function add() {
     const [title,setTitle] = useState("");
     const [description,setDescription] = useState("");
     const [price,setPrice] = useState("");
+    const [images,setImages] = useState([])
     const router = useRouter()
     const options = {
         position: "bottom-right",
@@ -34,7 +35,7 @@ export default function add() {
         e.preventDefault();
         try {
             if (validation()) {
-                const data = {title,description,price}
+                const data = {title,description,price,images}
                 const res = await axios.post('/api/products',data);
                 console.log(res);
                 if (res.data.status === true) {
@@ -44,6 +45,22 @@ export default function add() {
             }
         } catch (e) {
             console.log(e);
+        }
+    }
+    const uploadImage = async(e) => {
+        const files = e.target?.files;
+        if(files?.length > 0){
+            const data = new FormData();
+            for(const file of files){
+                data.append('file',file)
+            }
+            const res = await axios.post('http://localhost:3000/api/upload',data,{
+                headers:{'Content-Type':'multipart/form-data'}
+            });
+            console.log(res.data);
+            setImages(old => {
+                return [...old,...res.data];
+            });
         }
     }
   return (
@@ -59,10 +76,18 @@ export default function add() {
                 <textarea value={description} onChange={(e)=>setDescription(e.target.value)} placeholder='description'></textarea>
 
                 <label className='mt-2 uppercase underline underline-offset-2 text-lg font-bold'>Product Images</label>
-                <div className='p-2 overflow-x-auto overflow-y-hidden'>
-                    <button className='w-32 h-32 border flex items-center justify-center rounded-lg bg-[#F2D7D9]'>
+                <div className='p-2 overflow-x-auto flex gap-1 overflow-y-hidden'>
+                    {
+                        images.map((img)=>(
+                            <div key={img} className='w-32 cursor-pointer h-32 border flex items-center justify-center rounded-lg'>
+                                <img src={img} />
+                            </div>
+                        ))
+                    }
+                    <label className='w-32 cursor-pointer h-32 border flex items-center justify-center rounded-lg bg-[#D3CEDF]'>
                         <PlusCircleIcon className='w-10 h-10' />
-                    </button>
+                        <input onChange={uploadImage} type='file' className='hidden' />
+                    </label>
                 </div>
 
                 <label className='mt-2 uppercase underline underline-offset-2 text-lg font-bold'>Price in USD</label>
