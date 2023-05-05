@@ -14,3 +14,9 @@ option{
 .loader{
     @apply border-2 w-[25%] h-[25%] border-gray-800 rounded-full animate-ping
 }
+.displayBox{
+    @apply z-10
+}
+.showBack{
+    @apply opacity-100 block
+}
