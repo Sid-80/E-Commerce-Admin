@@ -1,6 +1,6 @@
 import React from 'react';
 import {ShoppingBagIcon} from "@heroicons/react/24/solid"
-import {HomeIcon,Cog6ToothIcon,ClipboardDocumentListIcon, ArchiveBoxIcon} from "@heroicons/react/24/outline";
+import {HomeIcon,Cog6ToothIcon,ClipboardDocumentListIcon, ArchiveBoxIcon, ListBulletIcon} from "@heroicons/react/24/outline";
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
@@ -27,6 +27,10 @@ export default function Navbar() {
             <Link href={'/products'} className={pathname.includes('/products') ? activeLink : inactiveLink}>
                 <ArchiveBoxIcon className='h-6 w-6' />
                 PRODUCTS
+            </Link>
+            <Link href={'/categories'} className={pathname.includes('/categories') ? activeLink : inactiveLink}>
+                <ListBulletIcon className='h-6 w-6' />
+                CATEGORIES
             </Link>
             <Link href={'/settings'} className={pathname.includes('/settings') ? activeLink : inactiveLink}>
                 <Cog6ToothIcon className='h-6 w-6' />

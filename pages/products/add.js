@@ -1,3 +1,4 @@
+"use client"
 import Layout from '@/components/Layout'
 import React, { useEffect, useState } from 'react'
 import {PlusCircleIcon} from "@heroicons/react/24/outline";
@@ -37,9 +38,7 @@ export default function add() {
             if (validation()) {
                 const data = {title,description,price,images}
                 const res = await axios.post('/api/products',data);
-                console.log(res);
                 if (res.data.status === true) {
-                    toast.error("Added",options);
                     router.push('/products');
                 }
             }
@@ -57,7 +56,6 @@ export default function add() {
             const res = await axios.post('http://localhost:3000/api/upload',data,{
                 headers:{'Content-Type':'multipart/form-data'}
             });
-            console.log(res.data);
             setImages(old => {
                 return [...old,...res.data];
             });

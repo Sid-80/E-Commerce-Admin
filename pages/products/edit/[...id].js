@@ -10,6 +10,7 @@ export default function editProduct() {
     const [title,setTitle] = useState("");
     const [description,setDescription] = useState("");
     const [price,setPrice] = useState("");
+    const [isUploading,setIsUploading] = useState(false);
     const [images,setImages] = useState([])
     const router = useRouter();
     const {id}= router.query;
@@ -50,6 +51,7 @@ export default function editProduct() {
     const uploadImage = async(e) => {
         const files = e.target?.files;
         if(files?.length > 0){
+            setIsUploading(true);
             const data = new FormData();
             for(const file of files){
                 data.append('file',file)
@@ -61,9 +63,9 @@ export default function editProduct() {
             setImages(old => {
                 return [...old,...res.data];
             });
+            setIsUploading(false);
         }
     }
-    
     useEffect(()=>{
       if(!id) return;
       axios.get(`/api/products?id=${id}`).then((res)=>{
@@ -72,7 +74,8 @@ export default function editProduct() {
         setPrice(res.data.price);
         setImages(res.data.images);
       });
-    },[id])
+    },[id]);
+    
   return (
     <Layout>
     <div className='flex flex-col justify-start items-start'>
@@ -86,6 +89,13 @@ export default function editProduct() {
 
             <label className='mt-2 uppercase underline underline-offset-2 text-lg font-bold'>Product Images</label>
                 <div className='p-2 overflow-x-auto flex gap-1 overflow-y-hidden'>
+                    {
+                        isUploading && (
+                            <div className='w-32 cursor-pointer h-32 border flex items-center justify-center rounded-lg'>
+                                <span class="loader"></span>
+                            </div>
+                        )
+                    }
                     {
                         images.map((img)=>(
                             <div key={img} className='w-32 cursor-pointer h-32 border flex items-center justify-center rounded-lg'>
