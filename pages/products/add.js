@@ -11,7 +11,9 @@ export default function add() {
     const [title,setTitle] = useState("");
     const [description,setDescription] = useState("");
     const [price,setPrice] = useState("");
-    const [images,setImages] = useState([])
+    const [category,setCategory] = useState([]);
+    const [images,setImages] = useState([]);
+    const [selectedCategory,setSelectedCategory] = useState('');
     const router = useRouter()
     const options = {
         position: "bottom-right",
@@ -37,7 +39,7 @@ export default function add() {
         try {
             if (validation()) {
                 const data = {title,description,price,images}
-                const res = await axios.post('/api/products',data);
+                const res = await axios.post('/api/products',{...data,category:selectedCategory});
                 if (res.data.status === true) {
                     router.push('/products');
                 }
@@ -61,6 +63,9 @@ export default function add() {
             });
         }
     }
+    useEffect(()=>{
+        axios.get('/api/categories').then((res)=>setCategory(res.data));
+    },[])
   return (
     <Layout>
         <div className='flex flex-col justify-start items-start'>
@@ -72,6 +77,16 @@ export default function add() {
 
                 <label className='mt-2 uppercase underline underline-offset-2 text-lg font-bold'>Product Description</label>
                 <textarea value={description} onChange={(e)=>setDescription(e.target.value)} placeholder='description'></textarea>
+
+                <label className='mt-2 uppercase underline underline-offset-2 text-lg font-bold'>Category</label>
+                <select value={selectedCategory} onChange={(e)=>setSelectedCategory(e.target.value)}>
+                    <option value="">Uncategorized</option>
+                    {
+                        category.length > 0 && category.map((cat)=>(
+                            <option value={cat._id} key={cat._id}>{cat.name}</option>
+                        ))
+                    }
+                </select>
 
                 <label className='mt-2 uppercase underline underline-offset-2 text-lg font-bold'>Product Images</label>
                 <div className='p-2 overflow-x-auto flex gap-1 overflow-y-hidden'>

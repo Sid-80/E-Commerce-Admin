@@ -7,22 +7,25 @@ import 'react-toastify/dist/ReactToastify.css';
 import Link from 'next/link';
 
 export default function categories() {
+    const [edit,setEdit] = useState(false);
     const [editedCategory,setEditedCategory] = useState(null);
     const [name ,setName] = useState('');
     const [categories,setCategories] = useState([]);
     const [parentCategory, setSelectedParent] = useState("");
     const [deleteSection,setDeleteSection] = useState(false);
     const [itemToBeDeleted,setItemDeleted] = useState(null);
+    const [properties,setProperties] = useState([]);
     const saveCategory = async(e) => {
         e.preventDefault();
         var res;
-        if(editCategory){
-            res = await axios.put('/api/categories',{name,parentCategory,_id:editedCategory._id});
-            setEditedCategory(null);
-        }else{
+        if(!edit){
             res = await axios.post('/api/categories',{name,parentCategory});
+        }else{
+            res = await axios.put('/api/categories',{name,parentCategory,_id:editedCategory?._id});
+            setEditedCategory(null);
         }
         setName('');
+        setSelectedParent('0');
         console.log(res.data)
         if(res.data.status){
             fetchCategories();
@@ -39,6 +42,7 @@ export default function categories() {
         axios.get('/api/categories').then((res)=>setCategories(res.data));
     }
     const editCategory = (cat) => {
+        setEdit(true);
         setEditedCategory(cat);
         setName(cat.name);
         if(cat.parent !== undefined)
@@ -72,6 +76,17 @@ export default function categories() {
         fetchCategories();
         setItemDeleted(null);
     }
+    const addProperty = () => {
+        setProperties(prev => {
+            return [...prev,{name:'',values:''}];
+        })
+    }
+    const handlePropertyNameChange = (property,e) => {
+
+    }
+    const handlePropertyValueChange = (property,e) => {
+
+    }
     useEffect(()=>{
         fetchCategories();
         setDeleteSection(false);
@@ -79,25 +94,40 @@ export default function categories() {
   return (
     <Layout>
          <div className='flex relative z-0 flex-col h-[100%] w-[100%] overflow-hidden justify-start items-start'>
-            <div className='flex flex-col w-[50%]'>
+            <div className='flex flex-col'>
             <h1 className='font-bold tracking-[5px] animate-pulse my-8'>{editedCategory ? `EDIT CATEGORY ${editCategory.name}` : `NEW CATEGORY`}</h1>
-            <form className='w-full p-5 flex gap-1' onSubmit={(e)=>saveCategory(e)}>
-                
-                <div>
-                    <label className='mt-2 uppercase underline underline-offset-2 text-lg font-bold'>Category Name</label>
-                    <input value={name} onChange={(e)=>setName(e.target.value)} type='text' placeholder='category name' />
+            <form className='p-5 flex flex-col gap-1' onSubmit={(e)=>saveCategory(e)}>
+                <div className='flex gap-5'>
+                    <div>
+                        <label className='mt-2 uppercase underline underline-offset-2 text-lg font-bold'>Category Name</label>
+                        <input value={name} onChange={(e)=>setName(e.target.value)} type='text' placeholder='category name' />
+                    </div>
+                    
+                    <div>
+                        <label className='mt-2 uppercase underline underline-offset-2 text-lg font-bold'>Select Category</label>
+                        <select value={parentCategory} onChange={e => setSelectedParent(e.target.value)}>
+                            <option value={0}>No Parent category</option>
+                            {
+                                categories.length > 0 && categories.map((cat)=>(
+                                    <option key={cat._id} value={cat._id}>{cat.name}</option>
+                                ))
+                            }
+                        </select>
+                    </div>
                 </div>
-                
-                <select className='pb-0' value={parentCategory} onChange={e => setSelectedParent(e.target.value)}>
-                    <option value={0}>No Parent category</option>
+                <div className='flex flex-col w-[100%]'>
+                    <label className='mt-2 uppercase underline underline-offset-2 text-lg font-bold'>Properties</label>
+                    <button onClick={addProperty} type='button' className='p-2 bg-[#D3CEDF] my-2 hover:bg-[#9CB4CC] rounded-lg'>ADD NEW PROPERTY</button>
                     {
-                        categories.length > 0 && categories.map((cat)=>(
-                            <option key={cat._id} value={cat._id}>{cat.name}</option>
+                        properties.length > 0 && properties.map((property)=>(
+                            <div className='flex gap-1'>
+                                <input type='text' onChange={(e)=>handlePropertyNameChange(property,e.target.value)} value={property.name} placeholder='Property name (ex.Color)' />
+                                <input type='text' onChange={(e)=>handlePropertyValueChange(property,e.target.value)} value={property.values} placeholder='values, comma separated' />
+                            </div>
                         ))
                     }
-                </select>
-
-                <button type='submit' className='bg-[#F2D7D9] px-7 h-[60%] mt-5 rounded-lg'>SAVE</button>
+                </div>
+                <div><button type='submit' className='bg-[#F2D7D9] px-7 p-2 mt-5 hover:ring-4 rounded-lg'>SAVE</button></div>
             </form>
             </div>
             <div className='flex flex-col flex-1 items-center justify-center p-2 w-full rounded-md overflow-y-auto overflow-x-hidden bg-[#748DA6]'>

@@ -6,10 +6,10 @@ export default async function handler(req, res) {
     await mongooseConnection();
     if(method === 'POST')
     {
-      const {title,description,price,images} = req.body;
+      const {title,description,price,images,category} = req.body;
       console.log(images);
       await Product.create({
-        title,description,price,images
+        title,description,price,images,category
       })
       res.json({status:true});
     }
@@ -24,11 +24,11 @@ export default async function handler(req, res) {
     }
     else if (method === 'PUT')
     {
-      const {title,description,price,id,images} = req.body;
+      const {title,description,price,id,images,category} = req.body;
       const _id = id[0];
       console.log(_id);
       await Product.updateOne({_id},{
-        title,description,price,images
+        title,description,price,images,category
       })
       res.json({status:true});
     }

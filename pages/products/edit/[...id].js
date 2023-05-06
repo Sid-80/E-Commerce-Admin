@@ -12,6 +12,8 @@ export default function editProduct() {
     const [price,setPrice] = useState("");
     const [isUploading,setIsUploading] = useState(false);
     const [images,setImages] = useState([])
+    const [selectedCategory,setSelectedCategory] = useState('');
+    const [category,setCategory] = useState([]);
     const router = useRouter();
     const {id}= router.query;
     
@@ -39,7 +41,7 @@ export default function editProduct() {
         try {
             if (validation()) {
                 const data = {id,title,description,price,images}
-                const res = await axios.put(`/api/products`,data);
+                const res = await axios.put(`/api/products`,{...data,category:selectedCategory});
                 if (res.data.status === true) {
                   router.push('/products');
                 }
@@ -73,9 +75,12 @@ export default function editProduct() {
         setDescription(res.data.description);
         setPrice(res.data.price);
         setImages(res.data.images);
+        setSelectedCategory(res.data.category);
       });
     },[id]);
-    
+    useEffect(()=>{
+        axios.get('/api/categories').then((res)=>setCategory(res.data));
+    },[])
   return (
     <Layout>
     <div className='flex flex-col justify-start items-start'>
@@ -86,7 +91,16 @@ export default function editProduct() {
             <label className='mt-2 uppercase underline underline-offset-2 text-lg font-bold'>Product Description</label>
             <textarea value={description} onChange={(e)=>setDescription(e.target.value)} placeholder='description'></textarea>
 
-
+            <label className='mt-2 uppercase underline underline-offset-2 text-lg font-bold'>Category</label>
+                <select value={selectedCategory} onChange={(e)=>setSelectedCategory(e.target.value)}>
+                    <option value="">Uncategorized</option>
+                    {
+                        category.length > 0 && category.map((cat)=>(
+                            <option value={cat._id} key={cat._id}>{cat.name}</option>
+                        ))
+                    }
+                </select>
+            
             <label className='mt-2 uppercase underline underline-offset-2 text-lg font-bold'>Product Images</label>
                 <div className='p-2 overflow-x-auto flex gap-1 overflow-y-hidden'>
                     {
