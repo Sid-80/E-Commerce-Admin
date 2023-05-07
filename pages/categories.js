@@ -19,17 +19,37 @@ export default function categories() {
         e.preventDefault();
         var res;
         if(!edit){
-            res = await axios.post('/api/categories',{name,parentCategory});
+            res = await axios.post('/api/categories',{
+                name,
+                parentCategory,
+                properties:properties.map(p => ({
+                    name:p.name,
+                    values:p.values.split(',')
+                }))
+            });
         }else{
-            res = await axios.put('/api/categories',{name,parentCategory,_id:editedCategory?._id});
+            res = await axios.put('/api/categories',{
+                name,
+                parentCategory,
+                properties:properties.map(p => ({
+                    name:p.name,
+                    values:p.values.split(',')
+                })),
+                _id:editedCategory?._id
+            });
             setEditedCategory(null);
         }
         setName('');
-        setSelectedParent('0');
-        console.log(res.data)
+        setSelectedParent('');
+        setProperties([]);
         if(res.data.status){
             fetchCategories();
-            toast.error(`${res.data.categoryDoc.name} Added`,options);
+            if(edit){
+                setEdit(false);
+                toast.error(`Updated`,options);
+            }else{
+                toast.error(`${res.data.categoryDoc.name} Added`,options);
+            }
         }
     }
     const options = {
@@ -45,10 +65,19 @@ export default function categories() {
         setEdit(true);
         setEditedCategory(cat);
         setName(cat.name);
+        setProperties(
+            cat.properties.map(({name,values})=>(
+                {
+                    name,
+                    values:values.join(',')
+                }
+            ))
+        );
         if(cat.parent !== undefined)
             setSelectedParent(cat.parent?._id);
         else
-            setSelectedParent(0);
+            setSelectedParent('');
+        
     }
     const changeClass = () => {
         var delBox = document.getElementById('deleteBox');
@@ -81,11 +110,26 @@ export default function categories() {
             return [...prev,{name:'',values:''}];
         })
     }
-    const handlePropertyNameChange = (property,e) => {
-
+    const handlePropertyNameChange = (index,property,newName) => {
+        setProperties(prev => {
+            const properties = [...prev];
+            properties[index].name = newName;
+            return properties;
+        })
     }
-    const handlePropertyValueChange = (property,e) => {
-
+    const handlePropertyValueChange = (index,property,newValue) => {
+        setProperties(prev => {
+            const properties = [...prev];
+            properties[index].values = newValue;
+            return properties;
+        })
+    }
+    const removeProperty = (index) => {
+        setProperties(prev => {
+            return [...prev].filter((p,pIndex)=>{
+                return pIndex !== index;
+            });
+        })
     }
     useEffect(()=>{
         fetchCategories();
@@ -95,8 +139,8 @@ export default function categories() {
     <Layout>
          <div className='flex relative z-0 flex-col h-[100%] w-[100%] overflow-hidden justify-start items-start'>
             <div className='flex flex-col'>
-            <h1 className='font-bold tracking-[5px] animate-pulse my-8'>{editedCategory ? `EDIT CATEGORY ${editCategory.name}` : `NEW CATEGORY`}</h1>
-            <form className='p-5 flex flex-col gap-1' onSubmit={(e)=>saveCategory(e)}>
+            <h1 className='font-bold tracking-[5px] animate-pulse my-8'>{edit ? `EDIT CATEGORY` : `NEW CATEGORY`}</h1>
+            <form className='p-5 flex flex-col  gap-1' onSubmit={(e)=>saveCategory(e)}>
                 <div className='flex gap-5'>
                     <div>
                         <label className='mt-2 uppercase underline underline-offset-2 text-lg font-bold'>Category Name</label>
@@ -114,55 +158,75 @@ export default function categories() {
                             }
                         </select>
                     </div>
-                </div>
-                <div className='flex flex-col w-[100%]'>
-                    <label className='mt-2 uppercase underline underline-offset-2 text-lg font-bold'>Properties</label>
-                    <button onClick={addProperty} type='button' className='p-2 bg-[#D3CEDF] my-2 hover:bg-[#9CB4CC] rounded-lg'>ADD NEW PROPERTY</button>
+                    </div>
+                    <div className='flex flex-col w-[100%] items-center text-start  justify-center'>
+                        <label className='mt-2 uppercase underline underline-offset-2 text-lg font-bold'>Properties</label>
+                        <button onClick={addProperty} type='button' className='p-2 bg-[#D3CEDF] my-2 hover:bg-[#9CB4CC] rounded-lg w-[50%]'>ADD NEW PROPERTY</button>
+                        {
+                            properties.length > 0 && properties.map((property,index)=>(
+                                <div className='flex gap-1 w-full'>
+                                    <input type='text' onChange={(e)=>handlePropertyNameChange(index,property,e.target.value)} value={property.name} placeholder='Property name (ex.Color)' />
+                                    <input type='text' onChange={(e)=>handlePropertyValueChange(index,property,e.target.value)} value={property.values} placeholder='values, comma separated' />
+                                    <button type='button' onClick={()=>removeProperty(index)} className='p-2 px-4 bg-[#D3CEDF] my-2 hover:bg-[#9CB4CC] rounded-lg'>Remove</button>
+                                </div>
+                            ))
+                        }
+                    </div>
+                
+                <div>
+                    <button type='submit' className='bg-[#CBE4DE] mr-2 hover:bg-[#03C988] px-7 p-2 mt-5 hover:ring-4 rounded-lg'>SAVE</button>
                     {
-                        properties.length > 0 && properties.map((property)=>(
-                            <div className='flex gap-1'>
-                                <input type='text' onChange={(e)=>handlePropertyNameChange(property,e.target.value)} value={property.name} placeholder='Property name (ex.Color)' />
-                                <input type='text' onChange={(e)=>handlePropertyValueChange(property,e.target.value)} value={property.values} placeholder='values, comma separated' />
-                            </div>
-                        ))
+                        edit && (
+                            <button onClick={()=>{
+                                setEditedCategory(null);
+                                setEdit(false);
+                                setName('');
+                                setSelectedParent('');
+                                setProperties([]);
+                            }
+                            } type='button' className='bg-[#FD8A8A] hover:bg-[#E97777] px-7 p-2 mt-5 hover:ring-4 rounded-lg'>CANCEL</button>
+                        )
                     }
                 </div>
-                <div><button type='submit' className='bg-[#F2D7D9] px-7 p-2 mt-5 hover:ring-4 rounded-lg'>SAVE</button></div>
             </form>
             </div>
-            <div className='flex flex-col flex-1 items-center justify-center p-2 w-full rounded-md overflow-y-auto overflow-x-hidden bg-[#748DA6]'>
-                <h1 className='text-center text-white font-bold text-2xl tracking-[5px] p-2'>CATEGORIES</h1>
-                <div className='bg-[#D3CEDF] h-full w-full flex-1 items-center flex p-2 flex-col'>
-                    {
-                        categories.map((cat)=>(
-                            <div className='flex flex-row items-center w-full justify-between font-bold m-2 p-2 text-white text-xl bg-[#748DA6]'>
-                                <div className='flex flex-row items-center' key={cat._id}>
-                                    {
-                                        cat.parent !== undefined ?
-                                        (
-                                            <>
-                                                <h1>{`${cat.parent.name} : ${cat.name} `}</h1>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <h1>{cat.name}</h1>
-                                            </>
-                                        )
-                                    }
-                                </div>
-                                <div className='flex gap-4 px-4'>
-                                    <button onClick={()=>editCategory(cat)}>
-                                        <PencilSquareIcon className='h-8 w-8 hover:text-green-300' />
-                                    </button>
-                                    <button onClick={()=>deleteCategory(cat)}>
-                                        <TrashIcon className='h-8 w-8 hover:text-red-600' />
-                                    </button>
-                                </div>
-                            </div>
-                        ))
-                    }
-                </div>
-            </div>
+            {
+                !edit && (
+                    <div className='flex flex-col flex-1 items-center justify-center p-2 w-full rounded-md overflow-y-auto overflow-x-hidden bg-[#748DA6]'>
+                        <h1 className='text-center text-white font-bold text-2xl tracking-[5px] p-2'>CATEGORIES</h1>
+                        <div className='bg-[#D3CEDF] h-full w-full flex-1 items-center flex p-2 flex-col'>
+                            {
+                                categories.map((cat)=>(
+                                    <div className='flex flex-row items-center w-full justify-between font-bold m-2 p-2 text-white text-xl bg-[#748DA6]'>
+                                        <div className='flex flex-row items-center' key={cat._id}>
+                                            {
+                                                cat.parent !== undefined ?
+                                                (
+                                                    <>
+                                                        <h1>{`${cat.parent.name} : ${cat.name} `}</h1>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <h1>{cat.name}</h1>
+                                                    </>
+                                                )
+                                            }
+                                        </div>
+                                        <div className='flex gap-4 px-4'>
+                                            <button onClick={()=>editCategory(cat)}>
+                                                <PencilSquareIcon className='h-8 w-8 hover:text-green-300' />
+                                            </button>
+                                            <button onClick={()=>deleteCategory(cat)}>
+                                                <TrashIcon className='h-8 w-8 hover:text-red-600' />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))
+                            }
+                        </div>
+                    </div>
+                )
+            }
             <div id='backDel' className=' absolute opacity-0 w-full hidden h-full backdrop-filter backdrop-blur-xl '>
                 <div
                 id='deleteBox'

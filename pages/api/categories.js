@@ -5,12 +5,12 @@ export default async function handler(req,res){
     const {method} = req;
     await mongooseConnection();
     if (method === 'POST') {
-        const {name,parentCategory} = req.body;
+        const {name,parentCategory,properties} = req.body;
         if (parentCategory === "") {
-            const categoryDoc = await Category.create({name});
+            const categoryDoc = await Category.create({name,properties});
             res.json({status:true,categoryDoc});
         }else{
-            const categoryDoc = await Category.create({name, parent:parentCategory});
+            const categoryDoc = await Category.create({name, parent:parentCategory,properties});
             res.json({status:true,categoryDoc});
         }
     }
@@ -20,12 +20,12 @@ export default async function handler(req,res){
     }
     else if(method === 'PUT')
     {
-        const {name,parentCategory,_id} = req.body;
-        if (parentCategory === 0) {
-            const categoryDoc = await Category.updateOne({_id},{name});
+        const {name,parentCategory,_id,properties} = req.body;
+        if (parentCategory === '') {
+            const categoryDoc = await Category.updateOne({_id},{name,properties});
             res.json({status:true,categoryDoc});
         }else{
-            const categoryDoc = await Category.updateOne({_id},{name, parent:parentCategory});
+            const categoryDoc = await Category.updateOne({_id},{name, parent:parentCategory, properties});
             res.json({status:true,categoryDoc});
         }
     }
