@@ -1,15 +1,19 @@
 import { mongooseConnection } from "@/lib/mongoose";
 import { Product } from "@/models/Products";
+import { adminRequest } from "./auth/[...nextauth]";
 
 export default async function handler(req, res) {
     const {method} = req;
+
     await mongooseConnection();
+    await adminRequest(req,res);
+
     if(method === 'POST')
     {
-      const {title,description,price,images,category} = req.body;
+      const {title,description,price,images,category,productProperties} = req.body;
       console.log(images);
       await Product.create({
-        title,description,price,images,category
+        title,description,price,images,category,properties:productProperties,
       })
       res.json({status:true});
     }
@@ -24,11 +28,11 @@ export default async function handler(req, res) {
     }
     else if (method === 'PUT')
     {
-      const {title,description,price,id,images,category} = req.body;
+      const {title,description,price,id,images,category,productProperties} = req.body;
       const _id = id[0];
       console.log(_id);
       await Product.updateOne({_id},{
-        title,description,price,images,category
+        title,description,price,images,category,properties:productProperties,
       })
       res.json({status:true});
     }

@@ -84,7 +84,7 @@ export default function categories() {
 
         setDeleteSection(!deleteSection);
         if (deleteSection) {
-            document.getElementById('delTitle').innerHTML = `Do you want to delete ${itemToBeDeleted.name} ?`;
+            document.getElementById('delTitle').innerHTML = `Do you want to delete ${itemToBeDeleted?.name} ?`;
             document.getElementById('backDel').classList.add('showBack')
             delBox.classList.add('displayBox');
         }else{

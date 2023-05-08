@@ -1,9 +1,13 @@
 import { mongooseConnection } from "@/lib/mongoose";
 import { Category } from "@/models/Categories";
+import { adminRequest } from "./auth/[...nextauth]";
 
 export default async function handler(req,res){
     const {method} = req;
+    
     await mongooseConnection();
+    await adminRequest(req,res);
+
     if (method === 'POST') {
         const {name,parentCategory,properties} = req.body;
         if (parentCategory === "") {

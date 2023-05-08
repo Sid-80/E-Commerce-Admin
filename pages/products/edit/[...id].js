@@ -5,12 +5,14 @@ import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 
 export default function editProduct() {
     const [title,setTitle] = useState("");
     const [description,setDescription] = useState("");
     const [price,setPrice] = useState("");
     const [isUploading,setIsUploading] = useState(false);
+    const [productProperties, setProductProperties] = useState({});
     const [images,setImages] = useState([])
     const [selectedCategory,setSelectedCategory] = useState('');
     const [category,setCategory] = useState([]);
@@ -41,7 +43,7 @@ export default function editProduct() {
         try {
             if (validation()) {
                 const data = {id,title,description,price,images}
-                const res = await axios.put(`/api/products`,{...data,category:selectedCategory});
+                const res = await axios.put(`/api/products`,{...data,category:selectedCategory,productProperties});
                 if (res.data.status === true) {
                   router.push('/products');
                 }
@@ -68,6 +70,22 @@ export default function editProduct() {
             setIsUploading(false);
         }
     }
+    const allProperties = [];
+    if(category.length > 0 && selectedCategory){
+        const CatInfo = category.find(({_id})=>_id===selectedCategory);
+        allProperties.push(...CatInfo.properties);
+        if(CatInfo.parent?._id && CatInfo.parent._id !== undefined){
+            const parentCat = category.find(({_id})=>_id===CatInfo.parent._id);
+            allProperties.push(...parentCat.properties);
+        }
+    }
+    const setProductProp = (propName,value) => {
+        setProductProperties(prev =>{
+            const newProdProps = {...prev};
+            newProdProps[propName] = value;
+            return newProdProps;
+        });
+    }
     useEffect(()=>{
       if(!id) return;
       axios.get(`/api/products?id=${id}`).then((res)=>{
@@ -76,6 +94,7 @@ export default function editProduct() {
         setPrice(res.data.price);
         setImages(res.data.images);
         setSelectedCategory(res.data.category);
+        setProductProperties(res.data.properties);
       });
     },[id]);
     useEffect(()=>{
@@ -83,8 +102,8 @@ export default function editProduct() {
     },[])
   return (
     <Layout>
-    <div className='flex flex-col justify-start items-start'>
-        <form className='w-full p-5' onSubmit={(e)=>{createProduct(e)}}>
+    <div className='flex flex-col justify-start items-start overflow-x-hidden overflow-y-auto'>
+        <form className='w-full p-5 ' onSubmit={(e)=>{createProduct(e)}}>
             <h1 className='font-bold tracking-[5px] animate-pulse my-8'>EDIT PRODUCT</h1>
             <label className='mt-2 uppercase underline underline-offset-2 text-lg font-bold'>Product Name</label>
             <input value={title} onChange={(e)=>setTitle(e.target.value)} type='text' placeholder='product name' />
@@ -100,6 +119,28 @@ export default function editProduct() {
                         ))
                     }
                 </select>
+                {
+                    allProperties.length > 0 &&
+                    (
+                        <label className='mt-2 uppercase underline underline-offset-2 text-lg font-bold'>Properties</label>
+                    )
+                }
+                {
+                    allProperties.length > 0 
+                    && allProperties.map((prop)=>(
+                        <div className='flex bg-[#FFF2F2] p-2 m-2 rounded-lg gap-1' key={prop.name}>
+                            <p className='bg-[#748DA6] mx-2 text-white rounded-md p-2'>{prop.name}</p>
+                            <select value={productProperties[prop.name]} onChange={(e)=>setProductProp(prop.name, e.target.value)}>
+                                <option value={0}>Select value</option>
+                                {
+                                    prop.values.map((val)=>(
+                                        <option value={val}>{val}</option>
+                                    ))
+                                }
+                            </select>
+                        </div>
+                    ))  
+                }
             
             <label className='mt-2 uppercase underline underline-offset-2 text-lg font-bold'>Product Images</label>
                 <div className='p-2 overflow-x-auto flex gap-1 overflow-y-hidden'>
@@ -130,6 +171,7 @@ export default function editProduct() {
                 <div>UPDATE</div> 
                 <div><PlusCircleIcon className='h-6 w-6' /></div>
             </button>
+            <Link className='bg-[#FD8A8A] hover:bg-[#E97777] px-7 p-2 mt-5 hover:ring-4 rounded-lg' href={'/products'}>CANCEL</Link>
         </form>
     </div>
     <ToastContainer />

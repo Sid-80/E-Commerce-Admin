@@ -1,8 +1,9 @@
 import React from 'react';
 import {ShoppingBagIcon} from "@heroicons/react/24/solid"
-import {HomeIcon,Cog6ToothIcon,ClipboardDocumentListIcon, ArchiveBoxIcon, ListBulletIcon} from "@heroicons/react/24/outline";
+import {HomeIcon,Cog6ToothIcon,ClipboardDocumentListIcon, ArchiveBoxIcon, ListBulletIcon,ArrowRightOnRectangleIcon} from "@heroicons/react/24/outline";
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { signOut } from 'next-auth/react';
 
 export default function Navbar() {
     const inactiveLink = 'flex gap-2 p-2';
@@ -36,6 +37,10 @@ export default function Navbar() {
                 <Cog6ToothIcon className='h-6 w-6' />
                 SETTINGS
             </Link>
+            <button onClick={signOut} className={`${inactiveLink} mt-10`}>
+                <ArrowRightOnRectangleIcon className='h-6 w-6' />
+                Logout
+            </button>
         </nav>
     </aside>
   )

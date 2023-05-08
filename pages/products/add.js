@@ -6,6 +6,7 @@ import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 
 export default function add() {
     const [title,setTitle] = useState("");
@@ -13,6 +14,7 @@ export default function add() {
     const [price,setPrice] = useState("");
     const [category,setCategory] = useState([]);
     const [images,setImages] = useState([]);
+    const [productProperties, setProductProperties] = useState({});
     const [selectedCategory,setSelectedCategory] = useState('');
     const router = useRouter()
     const options = {
@@ -39,7 +41,7 @@ export default function add() {
         try {
             if (validation()) {
                 const data = {title,description,price,images}
-                const res = await axios.post('/api/products',{...data,category:selectedCategory});
+                const res = await axios.post('/api/products',{...data,category:selectedCategory,productProperties});
                 if (res.data.status === true) {
                     router.push('/products');
                 }
@@ -62,6 +64,22 @@ export default function add() {
                 return [...old,...res.data];
             });
         }
+    }
+    const allProperties = [];
+    if(category.length > 0 && selectedCategory){
+        const CatInfo = category.find(({_id})=>_id===selectedCategory);
+        allProperties.push(...CatInfo.properties);
+        if(CatInfo.parent?._id && CatInfo.parent._id !== undefined){
+            const parentCat = category.find(({_id})=>_id===CatInfo.parent._id);
+            allProperties.push(...parentCat.properties);
+        }
+    }
+    const setProductProp = (propName,value) => {
+        setProductProperties(prev =>{
+            const newProdProps = {...prev};
+            newProdProps[propName] = value;
+            return newProdProps;
+        });
     }
     useEffect(()=>{
         axios.get('/api/categories').then((res)=>setCategory(res.data));
@@ -87,6 +105,28 @@ export default function add() {
                         ))
                     }
                 </select>
+                {
+                    allProperties.length > 0 &&
+                    (
+                        <label className='mt-2 uppercase underline underline-offset-2 text-lg font-bold'>Properties</label>
+                    )
+                }
+                {
+                    allProperties.length > 0 
+                    && allProperties.map((prop)=>(
+                        <div className='flex bg-[#FFF2F2] p-2 m-2 rounded-lg gap-1' key={prop.name}>
+                            <p className='bg-[#748DA6] mx-2 text-white rounded-md p-2'>{prop.name}</p>
+                            <select value={productProperties[prop.name]} onChange={(e)=>setProductProp(prop.name, e.target.value)}>
+                                <option value={0}>Select value</option>
+                                {
+                                    prop.values.map((val)=>(
+                                        <option value={val}>{val}</option>
+                                    ))
+                                }
+                            </select>
+                        </div>
+                    ))  
+                }
 
                 <label className='mt-2 uppercase underline underline-offset-2 text-lg font-bold'>Product Images</label>
                 <div className='p-2 overflow-x-auto flex gap-1 overflow-y-hidden'>
@@ -110,6 +150,7 @@ export default function add() {
                     <div>ADD</div> 
                     <div><PlusCircleIcon className='h-5 w-5' /></div>
                 </button>
+                <Link className='bg-[#FD8A8A] hover:bg-[#E97777] px-7 p-2 mt-5 hover:ring-4 rounded-lg' href={'/products'}>CANCEL</Link>
             </form>
         </div>
         <ToastContainer />

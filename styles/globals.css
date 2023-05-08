@@ -3,10 +3,10 @@
 @tailwind utilities;
 
 input, textarea, select{
-    @apply border-b-2 p-2 w-full mb-3
+    @apply border-b-2 p-2 w-full mb-3 bg-[#F9F9F9] rounded-md
 }
 input:focus, textarea:focus, select:focus{
-    @apply border-[#443C68] outline-none
+    @apply border-[#443C68] outline-none shadow-lg ring-2 ring-[#748DA6]
 }
 option{
     @apply cursor-pointer

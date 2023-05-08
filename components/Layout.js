@@ -11,7 +11,7 @@ export default function Layout({children}) {
   const { data: session } = useSession();
   if(!session){
     return(
-      <div className='flex bg-violet-300 h-screen w-screen items-center'>
+      <div className='flex bg-violet-300 h-screen w-screen items-center overflow-hidden'>
         <div className='text-center w-full'>
           <button onClick={()=>signIn('google')} className='p-2 px-4 rounded-md bg-white'>Login with google</button>
         </div>
@@ -20,9 +20,9 @@ export default function Layout({children}) {
   }
 
   return (
-      <div className='bg-[#443C68] min-h-screen flex'>
+      <div className='bg-[#443C68] h-screen w-screen flex overflow-hidden'>
         <Navbar />
-        <div className='bg-white flex-grow mt-2 mr-2 rounded-lg mb-2 p-4'>
+        <div className='bg-white flex-grow mt-2 mr-2 rounded-lg mb-2 p-4 overflow-y-auto overflow-x-hidden'>
           {children}
         </div>
     </div>
